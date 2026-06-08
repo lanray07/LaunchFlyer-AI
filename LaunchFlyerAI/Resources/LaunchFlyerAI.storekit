@@ -1,0 +1,119 @@
+{
+  "identifier" : "8F17B3B5-B468-4F27-A3AB-9866C5C7C77D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingRetryEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_GB",
+    "_storefront" : "GBR",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "launchflyer.subscriptions",
+      "localizations" : [
+        {
+          "description" : "LaunchFlyer AI premium plans",
+          "displayName" : "LaunchFlyer AI Pro",
+          "locale" : "en_GB"
+        }
+      ],
+      "name" : "LaunchFlyer AI Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "9.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "creator.monthly",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Unlimited campaigns, premium templates, and no watermark.",
+              "displayName" : "Creator Monthly",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "launchflyer.creator.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Creator Monthly",
+          "subscriptionGroupID" : "launchflyer.subscriptions",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "displayPrice" : "79.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "creator.yearly",
+          "localizations" : [
+            {
+              "description" : "Creator access billed yearly.",
+              "displayName" : "Creator Yearly",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "launchflyer.creator.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Creator Yearly",
+          "subscriptionGroupID" : "launchflyer.subscriptions",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "displayPrice" : "19.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "business.monthly",
+          "localizations" : [
+            {
+              "description" : "Brand kit, batch exports, event packs, and print-ready exports.",
+              "displayName" : "Business Monthly",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "launchflyer.business.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Business Monthly",
+          "subscriptionGroupID" : "launchflyer.subscriptions",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "displayPrice" : "39.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "agency.monthly",
+          "localizations" : [
+            {
+              "description" : "Multiple brand kits, white-label exports, and client folder placeholders.",
+              "displayName" : "Agency Monthly",
+              "locale" : "en_GB"
+            }
+          ],
+          "productID" : "launchflyer.agency.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Agency Monthly",
+          "subscriptionGroupID" : "launchflyer.subscriptions",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
