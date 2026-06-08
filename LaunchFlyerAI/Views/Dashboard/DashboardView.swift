@@ -15,6 +15,7 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
                     UpgradeBanner { showingPaywall = true }
+                    subscriptionStatus
                     metrics
                     quickActions
                     recentCampaigns
@@ -58,6 +59,32 @@ struct DashboardView: View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             MetricPill(title: "Campaigns", value: "\(campaigns.count)", icon: "megaphone.fill")
             MetricPill(title: "Exports", value: "\(exports.count)", icon: "square.and.arrow.up.fill")
+        }
+    }
+
+    private var subscriptionStatus: some View {
+        GlassPanel(cornerRadius: 20) {
+            HStack(spacing: 14) {
+                Image(systemName: services.subscriptionService.isActive ? "checkmark.seal.fill" : "crown.fill")
+                    .font(.title2)
+                    .foregroundStyle(services.subscriptionService.isActive ? .launchMint : .launchGold)
+                    .frame(width: 44, height: 44)
+                    .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(services.subscriptionService.currentPlan.rawValue) Plan")
+                        .font(.headline)
+                        .foregroundStyle(.white)
+                    Text(services.subscriptionService.currentPlan.includedFeatures.joined(separator: " / "))
+                        .font(.caption)
+                        .lineLimit(2)
+                        .foregroundStyle(.white.opacity(0.58))
+                }
+                Spacer()
+            }
+        }
+        .task {
+            await services.subscriptionService.loadProducts()
         }
     }
 

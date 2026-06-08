@@ -22,20 +22,41 @@ struct SettingsView: View {
                     NavigationLink {
                         ExportCenterView()
                     } label: {
-                        Label("Export settings", systemImage: "square.and.arrow.up")
+                        Label("Export center", systemImage: "square.and.arrow.up")
+                    }
+                    NavigationLink {
+                        ExportSettingsView()
+                    } label: {
+                        Label("Export settings", systemImage: "gearshape.2.fill")
                     }
                     NavigationLink {
                         BrandKitView()
                     } label: {
                         Label("Brand settings", systemImage: "paintpalette.fill")
                     }
-                    SettingsRow(title: "Voice settings", icon: "waveform") {}
-                    SettingsRow(title: "Design preferences", icon: "slider.horizontal.3") {}
+                    NavigationLink {
+                        VoiceSettingsView()
+                    } label: {
+                        Label("Voice settings", systemImage: "waveform")
+                    }
+                    NavigationLink {
+                        DesignPreferencesView()
+                    } label: {
+                        Label("Design preferences", systemImage: "slider.horizontal.3")
+                    }
                 }
 
                 Section {
-                    SettingsRow(title: "Privacy policy", icon: "lock.shield.fill") {}
-                    SettingsRow(title: "Terms of use", icon: "doc.text.fill") {}
+                    NavigationLink {
+                        LegalDocumentView(document: .privacy)
+                    } label: {
+                        Label("Privacy policy", systemImage: "lock.shield.fill")
+                    }
+                    NavigationLink {
+                        LegalDocumentView(document: .terms)
+                    } label: {
+                        Label("Terms of use", systemImage: "doc.text.fill")
+                    }
                     Button(role: .destructive) {
                         confirmDelete = true
                     } label: {

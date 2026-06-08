@@ -100,11 +100,11 @@ final class BrandKit {
         id: UUID = UUID(),
         brandName: String,
         colors: String,
-        logoPlaceholder: String = "Logo placeholder",
-        fontsPlaceholder: String = "Display / Body font placeholders",
+        logoPlaceholder: String = "Logo upload slot",
+        fontsPlaceholder: String = "Display / Body font pairing",
         contactDetails: String = "",
         socialHandles: String = "",
-        qrCodePlaceholder: String = "QR code placeholder"
+        qrCodePlaceholder: String = "Campaign QR code"
     ) {
         self.id = id
         self.brandName = brandName

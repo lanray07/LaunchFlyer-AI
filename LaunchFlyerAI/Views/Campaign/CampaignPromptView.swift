@@ -30,6 +30,16 @@ struct CampaignPromptView: View {
     private var promptForm: some View {
         GlassPanel {
             VStack(spacing: 16) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(CampaignFormPreset.samples) { preset in
+                            FormChip(title: preset.title, icon: preset.icon) {
+                                viewModel.applyPreset(preset)
+                            }
+                        }
+                    }
+                }
+
                 Picker("Campaign type", selection: $viewModel.campaignType) {
                     ForEach(CampaignType.allCases) { type in
                         Text(type.rawValue).tag(type)
@@ -43,6 +53,8 @@ struct CampaignPromptView: View {
                 PremiumTextField("Offer", text: $viewModel.offer)
                 PremiumTextField("Target audience", text: $viewModel.targetAudience)
                 PremiumTextField("Call to action", text: $viewModel.callToAction)
+                PremiumTextField("Campaign goal", text: $viewModel.campaignGoal)
+                PremiumTextField("Contact details", text: $viewModel.contactDetails)
 
                 Picker("Visual style", selection: $viewModel.visualStyle) {
                     ForEach(VisualStyle.allCases) { style in
@@ -51,21 +63,25 @@ struct CampaignPromptView: View {
                 }
                 .pickerStyle(.segmented)
 
-                TextEditor(text: $viewModel.brief)
-                    .frame(minHeight: 118)
-                    .padding(12)
-                    .foregroundStyle(.white)
-                    .scrollContentBackground(.hidden)
-                    .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .overlay(alignment: .topLeading) {
-                        if viewModel.brief.isEmpty {
-                            Text("Describe the campaign, audience, vibe, and must-have details.")
-                                .foregroundStyle(.white.opacity(0.38))
-                                .padding(.top, 20)
-                                .padding(.leading, 17)
-                                .allowsHitTesting(false)
-                        }
-                    }
+                PremiumTextEditor(
+                    title: "Deliverables",
+                    placeholder: "List the campaign assets to generate.",
+                    text: $viewModel.deliverables,
+                    minHeight: 88
+                )
+
+                PremiumTextEditor(
+                    title: "Brand notes",
+                    placeholder: "Describe the visual direction, colours, vibe, and must-have design details.",
+                    text: $viewModel.brandNotes,
+                    minHeight: 92
+                )
+
+                PremiumTextEditor(
+                    title: "Campaign brief",
+                    placeholder: "Describe the campaign, audience, vibe, and must-have details.",
+                    text: $viewModel.brief
+                )
             }
         }
     }
@@ -125,7 +141,7 @@ struct CampaignPromptView: View {
         let campaign = Campaign(
             title: title,
             campaignType: viewModel.campaignType.rawValue,
-            brief: viewModel.brief,
+            brief: viewModel.compiledBrief,
             style: viewModel.visualStyle.rawValue
         )
         modelContext.insert(campaign)

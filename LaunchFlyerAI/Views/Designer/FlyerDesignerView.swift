@@ -32,6 +32,10 @@ struct FlyerDesignerView: View {
                 PremiumTextField("Offer", text: $viewModel.document.offer)
                 PremiumTextField("Event details", text: $viewModel.document.eventDetails)
                 PremiumTextField("CTA", text: $viewModel.document.callToAction)
+                PremiumTextField("Image slot", text: $viewModel.document.imagePlaceholder)
+                PremiumTextField("Logo slot", text: $viewModel.document.logoPlaceholder)
+                PremiumTextField("QR code label", text: $viewModel.document.qrCodePlaceholder)
+                PremiumTextField("Contact details", text: $viewModel.document.contactDetails)
 
                 Picker("Layout", selection: $viewModel.document.layout) {
                     ForEach(FlyerLayout.allCases) { layout in

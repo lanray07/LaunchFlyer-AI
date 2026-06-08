@@ -10,28 +10,15 @@ struct PaywallView: View {
                 PremiumBackground()
                 ScrollView {
                     VStack(spacing: 22) {
-                        VStack(spacing: 12) {
-                            Image(systemName: "crown.fill")
-                                .font(.system(size: 44))
-                                .foregroundStyle(.launchGold)
-                            Text("LaunchFlyer AI Pro")
-                                .font(.largeTitle.bold())
-                                .foregroundStyle(.white)
-                            Text("Unlimited campaigns, premium templates, no watermark, AI copywriter, brand kits, batch exports, and agency workflows.")
-                                .font(.body)
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.white.opacity(0.66))
-                        }
-                        .padding(.top, 26)
+                        header
+                        freePlan
+                        subscriptionPlans
+                        restoreButton
+                        legalLine
 
-                        ForEach(SubscriptionPlan.allCases.filter { $0 != .free }) { plan in
-                            PlanRow(plan: plan)
+                        if let message = services.subscriptionService.errorMessage {
+                            ErrorBanner(message: message)
                         }
-
-                        Button("Restore Purchases") {
-                            Task { await services.subscriptionService.restorePurchases() }
-                        }
-                        .buttonStyle(SecondaryButtonStyle())
                     }
                     .padding()
                 }
@@ -47,40 +34,156 @@ struct PaywallView: View {
             }
         }
     }
-}
 
-private struct PlanRow: View {
-    var plan: SubscriptionPlan
+    private var header: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "crown.fill")
+                .font(.system(size: 44))
+                .foregroundStyle(.launchGold)
+            Text("LaunchFlyer AI Pro")
+                .font(.largeTitle.bold())
+                .foregroundStyle(.white)
+            Text("Unlimited campaigns, premium templates, no watermark, AI copywriter, brand kits, batch exports, and agency workflows.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white.opacity(0.66))
+        }
+        .padding(.top, 26)
+    }
 
-    var body: some View {
-        GlassPanel {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(plan.rawValue) Plan")
+    private var freePlan: some View {
+        GlassPanel(cornerRadius: 22) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Label("Free Plan", systemImage: "sparkles")
                         .font(.headline.bold())
                         .foregroundStyle(.white)
-                    Text(features)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.62))
+                    Spacer()
+                    Text("3/month")
+                        .font(.headline.bold())
+                        .foregroundStyle(.launchMint)
                 }
-                Spacer()
-                Text(plan.price)
-                    .font(.headline.bold())
-                    .foregroundStyle(.launchMint)
+                FeatureList(features: SubscriptionPlan.free.includedFeatures)
             }
         }
     }
 
-    private var features: String {
-        switch plan {
-        case .creator:
-            return "Unlimited campaigns, premium templates, no watermark."
-        case .business:
-            return "Brand kit, batch exports, event packs, print-ready exports."
-        case .agency:
-            return "Multiple brand kits, white-label exports, client folders."
-        case .free:
-            return "3 campaigns/month, basic templates, watermark."
+    private var subscriptionPlans: some View {
+        VStack(spacing: 14) {
+            ForEach(SubscriptionSKU.allCases) { sku in
+                PlanRow(
+                    sku: sku,
+                    price: services.subscriptionService.displayPrice(for: sku),
+                    isCurrent: services.subscriptionService.currentProductID == sku.rawValue,
+                    isPurchasing: services.subscriptionService.purchasingProductID == sku.rawValue,
+                    canPurchase: services.subscriptionService.product(for: sku) != nil
+                ) {
+                    Task {
+                        await services.subscriptionService.purchase(sku)
+                    }
+                }
+            }
+        }
+    }
+
+    private var restoreButton: some View {
+        Button {
+            Task { await services.subscriptionService.restorePurchases() }
+        } label: {
+            Label("Restore Purchases", systemImage: "arrow.clockwise")
+        }
+        .buttonStyle(SecondaryButtonStyle())
+    }
+
+    private var legalLine: some View {
+        Text("Subscriptions renew automatically until cancelled. Manage or cancel from your Apple ID subscriptions.")
+            .font(.caption)
+            .multilineTextAlignment(.center)
+            .foregroundStyle(.white.opacity(0.5))
+    }
+}
+
+private struct PlanRow: View {
+    var sku: SubscriptionSKU
+    var price: String
+    var isCurrent: Bool
+    var isPurchasing: Bool
+    var canPurchase: Bool
+    var action: () -> Void
+
+    var body: some View {
+        GlassPanel {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text(sku.displayName)
+                                .font(.headline.bold())
+                                .foregroundStyle(.white)
+                            if let badge = sku.badge {
+                                Text(badge)
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 5)
+                                    .background(.launchGold, in: Capsule())
+                            }
+                        }
+
+                        Text("\(price) \(sku.cadence)")
+                            .font(.title3.bold())
+                            .foregroundStyle(.launchMint)
+                    }
+                    Spacer()
+                    Image(systemName: isCurrent ? "checkmark.seal.fill" : "crown.fill")
+                        .foregroundStyle(isCurrent ? .launchMint : .white.opacity(0.5))
+                }
+
+                FeatureList(features: sku.benefits)
+
+                Button(action: action) {
+                    if isPurchasing {
+                        ProgressView()
+                            .tint(.black)
+                            .frame(maxWidth: .infinity)
+                    } else {
+                        Text(buttonTitle)
+                    }
+                }
+                .buttonStyle(PremiumButtonStyle())
+                .disabled(isCurrent || !canPurchase || isPurchasing)
+
+                if !canPurchase {
+                    Text("Product ID: \(sku.rawValue)")
+                        .font(.caption2)
+                        .foregroundStyle(.white.opacity(0.46))
+                }
+            }
+        }
+    }
+
+    private var buttonTitle: String {
+        if isCurrent { return "Current plan" }
+        if !canPurchase { return "StoreKit setup required" }
+        return "Choose \(sku.plan.rawValue)"
+    }
+}
+
+private struct FeatureList: View {
+    var features: [String]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(features, id: \.self) { feature in
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.launchMint)
+                    Text(feature)
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.68))
+                }
+            }
         }
     }
 }

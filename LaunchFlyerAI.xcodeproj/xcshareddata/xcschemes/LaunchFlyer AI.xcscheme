@@ -51,6 +51,9 @@
             ReferencedContainer = "container:LaunchFlyerAI.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "container:LaunchFlyerAI/Resources/LaunchFlyerAI.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

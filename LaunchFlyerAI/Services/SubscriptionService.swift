@@ -5,15 +5,13 @@ import StoreKit
 final class SubscriptionService: ObservableObject {
     @Published private(set) var products: [Product] = []
     @Published private(set) var currentPlan: SubscriptionPlan = .free
+    @Published private(set) var currentProductID: String?
     @Published private(set) var isActive = false
+    @Published private(set) var isLoadingProducts = false
+    @Published private(set) var purchasingProductID: String?
     @Published var errorMessage: String?
 
-    private let productIDs = [
-        "launchflyer.creator.monthly",
-        "launchflyer.creator.yearly",
-        "launchflyer.business.monthly",
-        "launchflyer.agency.monthly"
-    ]
+    private let productIDs = SubscriptionSKU.allCases.map(\.rawValue)
 
     private var updatesTask: Task<Void, Never>?
 
@@ -32,16 +30,21 @@ final class SubscriptionService: ObservableObject {
 
     @MainActor
     func loadProducts() async {
+        isLoadingProducts = true
+        errorMessage = nil
         do {
             products = try await Product.products(for: productIDs)
             await refreshEntitlements()
         } catch {
             errorMessage = error.localizedDescription
         }
+        isLoadingProducts = false
     }
 
     @MainActor
     func purchase(_ product: Product) async {
+        purchasingProductID = product.id
+        errorMessage = nil
         do {
             let result = try await product.purchase()
             switch result {
@@ -57,6 +60,16 @@ final class SubscriptionService: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
         }
+        purchasingProductID = nil
+    }
+
+    @MainActor
+    func purchase(_ sku: SubscriptionSKU) async {
+        guard let product = product(for: sku) else {
+            errorMessage = "StoreKit product \(sku.rawValue) is not loaded. Check the StoreKit configuration or App Store Connect product setup."
+            return
+        }
+        await purchase(product)
     }
 
     @MainActor
@@ -72,12 +85,15 @@ final class SubscriptionService: ObservableObject {
     @MainActor
     private func refreshEntitlements() async {
         var activePlan: SubscriptionPlan = .free
+        var activeProductID: String?
         for await entitlement in Transaction.currentEntitlements {
             if case .verified(let transaction) = entitlement {
                 activePlan = plan(for: transaction.productID)
+                activeProductID = transaction.productID
             }
         }
         currentPlan = activePlan
+        currentProductID = activeProductID
         isActive = activePlan != .free
     }
 
@@ -86,6 +102,7 @@ final class SubscriptionService: ObservableObject {
         switch transactionResult {
         case .verified(let transaction):
             currentPlan = plan(for: transaction.productID)
+            currentProductID = transaction.productID
             isActive = currentPlan != .free
             await transaction.finish()
         case .unverified:
@@ -98,5 +115,13 @@ final class SubscriptionService: ObservableObject {
         if productID.contains("business") { return .business }
         if productID.contains("creator") { return .creator }
         return .free
+    }
+
+    func product(for sku: SubscriptionSKU) -> Product? {
+        products.first { $0.id == sku.rawValue }
+    }
+
+    func displayPrice(for sku: SubscriptionSKU) -> String {
+        product(for: sku)?.displayPrice ?? sku.fallbackPrice
     }
 }

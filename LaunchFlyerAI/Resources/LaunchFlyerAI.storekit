@@ -98,7 +98,7 @@
           "internalID" : "agency.monthly",
           "localizations" : [
             {
-              "description" : "Multiple brand kits, white-label exports, and client folder placeholders.",
+              "description" : "Multiple brand kits, white-label exports, and client folders.",
               "displayName" : "Agency Monthly",
               "locale" : "en_GB"
             }

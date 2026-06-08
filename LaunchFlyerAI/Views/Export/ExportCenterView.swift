@@ -39,7 +39,7 @@ struct ExportCenterView: View {
                 ExportCard(title: "Instagram / social asset", format: .png, size: "1080x1350") {
                     export(format: .png, size: CGSize(width: 1080, height: 1350))
                 }
-                ExportCard(title: "Print-ready placeholder", format: .pdf, size: "US Letter") {
+                ExportCard(title: "Print-ready PDF", format: .pdf, size: "US Letter") {
                     export(format: .pdf, size: CGSize(width: 612, height: 792))
                 }
                 ExportCard(title: "Compressed web image", format: .jpg, size: "1200x628") {

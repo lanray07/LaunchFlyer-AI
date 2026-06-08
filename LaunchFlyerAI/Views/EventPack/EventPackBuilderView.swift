@@ -3,6 +3,7 @@ import SwiftUI
 struct EventPackBuilderView: View {
     @EnvironmentObject private var services: AppServices
     @StateObject private var viewModel = CampaignPromptViewModel()
+    @State private var didLoadPreset = false
 
     var body: some View {
         ZStack {
@@ -15,7 +16,28 @@ struct EventPackBuilderView: View {
                             PremiumTextField("Event name", text: $viewModel.businessName)
                             PremiumTextField("Date/time", text: $viewModel.dateTime)
                             PremiumTextField("Location", text: $viewModel.location)
+                            PremiumTextField("Offer or event promise", text: $viewModel.offer)
+                            PremiumTextField("Target audience", text: $viewModel.targetAudience)
                             PremiumTextField("RSVP or ticket CTA", text: $viewModel.callToAction)
+                            PremiumTextField("Contact details", text: $viewModel.contactDetails)
+                            Picker("Style", selection: $viewModel.visualStyle) {
+                                ForEach(VisualStyle.allCases) { style in
+                                    Text(style.rawValue).tag(style)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            PremiumTextEditor(
+                                title: "Event pack assets",
+                                placeholder: "Event flyer, RSVP graphic, countdown story, speaker announcement, reminder post, thank-you post.",
+                                text: $viewModel.deliverables,
+                                minHeight: 96
+                            )
+                            PremiumTextEditor(
+                                title: "Event details",
+                                placeholder: "Add speakers, agenda, age range, ticket notes, dress code, sponsors, or accessibility details.",
+                                text: $viewModel.brief,
+                                minHeight: 120
+                            )
                         }
                     }
 
@@ -34,6 +56,11 @@ struct EventPackBuilderView: View {
             }
         }
         .navigationTitle("Event Pack")
+        .onAppear {
+            guard !didLoadPreset else { return }
+            viewModel.applyPreset(.churchEvent)
+            didLoadPreset = true
+        }
     }
 
     private var eventAssets: some View {

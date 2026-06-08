@@ -21,6 +21,15 @@ struct AICopywriterView: View {
                                 }
                             }
                             .pickerStyle(.segmented)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    ForEach(["Flyer headlines", "CTAs", "Social captions", "Hashtags", "SMS copy", "Email subjects"], id: \.self) { format in
+                                        FormChip(title: format, icon: "text.quote") {
+                                            viewModel.format = format
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
