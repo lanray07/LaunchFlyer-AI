@@ -108,7 +108,6 @@ def latest_matching_build(app_id, build_number)
   path = query_path(
     "/apps/#{app_id}/builds",
     {
-      "sort" => "-uploadedDate",
       "limit" => "200"
     }
   )

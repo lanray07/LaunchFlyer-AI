@@ -1,0 +1,43 @@
+name: Submit Existing App Store Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_version:
+        description: "App Store version string"
+        required: true
+        default: "1.0"
+      build_number:
+        description: "Uploaded App Store Connect build number"
+        required: true
+      processing_timeout_minutes:
+        description: "How long to wait for App Store Connect build processing"
+        required: true
+        default: "45"
+
+jobs:
+  submit-existing-build:
+    name: Attach uploaded build and submit for App Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    env:
+      APP_ID: "6777979967"
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      APP_VERSION: ${{ inputs.app_version }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      PROCESSING_TIMEOUT_MINUTES: ${{ inputs.processing_timeout_minutes }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Attach build and submit for App Review
+        run: ruby tools/submit_app_store_build.rb
