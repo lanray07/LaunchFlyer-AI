@@ -40,6 +40,18 @@ extension Color {
     }
 }
 
+extension ShapeStyle where Self == Color {
+    static var launchInk: Color { Color.launchInk }
+    static var launchGraphite: Color { Color.launchGraphite }
+    static var launchElectric: Color { Color.launchElectric }
+    static var launchMint: Color { Color.launchMint }
+    static var launchBerry: Color { Color.launchBerry }
+    static var launchGold: Color { Color.launchGold }
+    static var launchOrange: Color { Color.launchOrange }
+    static var launchRose: Color { Color.launchRose }
+    static var launchSilver: Color { Color.launchSilver }
+}
+
 struct PremiumBackground: View {
     var body: some View {
         ZStack {
