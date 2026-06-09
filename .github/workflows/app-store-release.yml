@@ -1,0 +1,144 @@
+name: App Store Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_version:
+        description: "App Store version string"
+        required: true
+        default: "1.0"
+      submit_for_review:
+        description: "Attach the processed build to the version and submit for App Review"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      processing_timeout_minutes:
+        description: "How long to wait for App Store Connect build processing"
+        required: true
+        default: "45"
+
+jobs:
+  archive-upload-submit:
+    name: Archive, upload, and submit to App Store Connect
+    runs-on: macos-latest
+    timeout-minutes: 90
+
+    env:
+      APP_ID: "6777979967"
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APP_VERSION: ${{ inputs.app_version }}
+      BUILD_NUMBER: ${{ github.run_id }}
+      SUBMIT_FOR_REVIEW: ${{ inputs.submit_for_review }}
+      PROCESSING_TIMEOUT_MINUTES: ${{ inputs.processing_timeout_minutes }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Prepare App Store Connect API key
+        run: |
+          set -euo pipefail
+          AUTH_KEY_PATH="${RUNNER_TEMP}/AuthKey_${ASC_KEY_ID}.p8"
+          mkdir -p "${HOME}/.appstoreconnect/private_keys"
+          printf "%s" "${ASC_PRIVATE_KEY}" | ruby -pe 'gsub(/\\n/, "\n")' > "${AUTH_KEY_PATH}"
+          cp "${AUTH_KEY_PATH}" "${HOME}/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          echo "AUTH_KEY_PATH=${AUTH_KEY_PATH}" >> "${GITHUB_ENV}"
+
+      - name: Build LaunchFlyer AI for simulator
+        run: |
+          xcodebuild \
+            -project LaunchFlyerAI.xcodeproj \
+            -scheme "LaunchFlyer AI" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            DEVELOPMENT_TEAM="${APPLE_TEAM_ID}" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Archive LaunchFlyer AI for App Store
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project LaunchFlyerAI.xcodeproj \
+            -scheme "LaunchFlyer AI" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "${RUNNER_TEMP}/LaunchFlyerAI.xcarchive" \
+            DEVELOPMENT_TEAM="${APPLE_TEAM_ID}" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="${BUILD_NUMBER}" \
+            MARKETING_VERSION="${APP_VERSION}" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "${AUTH_KEY_PATH}" \
+            -authenticationKeyID "${ASC_KEY_ID}" \
+            -authenticationKeyIssuerID "${ASC_ISSUER_ID}" \
+            archive
+
+      - name: Export App Store IPA
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>${APPLE_TEAM_ID}</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath "${RUNNER_TEMP}/LaunchFlyerAI.xcarchive" \
+            -exportPath "${RUNNER_TEMP}/export" \
+            -exportOptionsPlist "${RUNNER_TEMP}/ExportOptions.plist" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "${AUTH_KEY_PATH}" \
+            -authenticationKeyID "${ASC_KEY_ID}" \
+            -authenticationKeyIssuerID "${ASC_ISSUER_ID}"
+
+          IPA_PATH="$(find "${RUNNER_TEMP}/export" -name '*.ipa' -print -quit)"
+          test -n "${IPA_PATH}"
+          echo "IPA_PATH=${IPA_PATH}" >> "${GITHUB_ENV}"
+          ls -lh "${IPA_PATH}"
+
+      - name: Upload IPA to App Store Connect
+        run: |
+          set -euo pipefail
+          xcrun altool \
+            --upload-app \
+            --type ios \
+            --file "${IPA_PATH}" \
+            --apiKey "${ASC_KEY_ID}" \
+            --apiIssuer "${ASC_ISSUER_ID}" \
+            --verbose
+
+      - name: Attach build and submit for App Review
+        if: ${{ inputs.submit_for_review == 'true' }}
+        run: ruby tools/submit_app_store_build.rb
