@@ -1,0 +1,55 @@
+name: Xcode App Store Connect
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_subscription_review_screenshots:
+        description: "Upload Creator subscription review screenshots"
+        required: true
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+jobs:
+  xcode-and-app-store-connect:
+    name: Xcode build and App Store Connect upload
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    env:
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Build LaunchFlyer AI for simulator
+        run: |
+          xcodebuild \
+            -project LaunchFlyerAI.xcodeproj \
+            -scheme "LaunchFlyer AI" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            DEVELOPMENT_TEAM="${APPLE_TEAM_ID}" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload Creator subscription review screenshots
+        if: ${{ inputs.upload_subscription_review_screenshots == 'true' }}
+        run: ruby tools/upload_subscription_review_screenshots.rb
