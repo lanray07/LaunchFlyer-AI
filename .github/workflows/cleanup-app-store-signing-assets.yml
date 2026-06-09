@@ -1,0 +1,38 @@
+name: Clean Up App Store Signing Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      distribution_certificate_id:
+        description: "Generated App Store Connect certificate ID to delete"
+        required: false
+        default: ""
+      profile_id:
+        description: "Generated App Store Connect provisioning profile ID to delete"
+        required: false
+        default: ""
+
+jobs:
+  cleanup-signing-assets:
+    name: Delete generated signing assets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      DISTRIBUTION_CERTIFICATE_ID: ${{ inputs.distribution_certificate_id }}
+      PROFILE_ID: ${{ inputs.profile_id }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Clean up generated signing assets
+        run: ruby tools/cleanup_app_store_signing.rb

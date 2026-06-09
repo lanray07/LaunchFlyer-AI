@@ -37,8 +37,6 @@ jobs:
       BUILD_NUMBER: ${{ github.run_id }}
       SUBMIT_FOR_REVIEW: ${{ inputs.submit_for_review }}
       PROCESSING_TIMEOUT_MINUTES: ${{ inputs.processing_timeout_minutes }}
-      REVOKE_DISTRIBUTION_CERTIFICATE_ID: "8RKMP9X7XV"
-      REVOKE_PROFILE_ID: "2Z48G9ZN9G"
 
     steps:
       - name: Check out repository
@@ -192,3 +190,7 @@ jobs:
       - name: Attach build and submit for App Review
         if: ${{ inputs.submit_for_review == 'true' }}
         run: ruby tools/submit_app_store_build.rb
+
+      - name: Clean up generated App Store signing assets
+        if: ${{ always() }}
+        run: ruby tools/cleanup_app_store_signing.rb
