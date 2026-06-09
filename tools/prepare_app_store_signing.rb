@@ -86,9 +86,12 @@ end
 def bundle_id_for(identifier)
   path = query_path("/bundleIds", { "filter[identifier]" => identifier, "limit" => "10" })
   bundle_id = get_data(path).find { |item| item.dig("attributes", "identifier") == identifier }
-  raise "No bundle ID found for #{identifier}" unless bundle_id
-
   bundle_id
+end
+
+def fetch_app_bundle_identifier(app_id)
+  response = request_json("get", "/apps/#{app_id}", expected: [200])
+  JSON.parse(response.body).fetch("data").dig("attributes", "bundleId")
 end
 
 def create_certificate(csr_path)
@@ -147,13 +150,28 @@ def append_github_env(values)
   end
 end
 
-bundle_identifier = ENV.fetch("BUNDLE_ID", "com.launchflyer.ai")
+app_id = ENV.fetch("APP_ID", "6777979967")
+requested_bundle_identifier = ENV.fetch("BUNDLE_ID", "com.launchflyer.ai")
 csr_path = env!("DIST_CSR_PATH")
 cert_path = env!("DIST_CERT_PATH")
 profile_path = env!("PROFILE_PATH")
 profile_name = "LaunchFlyer AI GitHub App Store #{Time.now.utc.strftime("%Y%m%d%H%M%S")}"
 
-bundle_id = bundle_id_for(bundle_identifier)
+app_bundle_identifier = fetch_app_bundle_identifier(app_id)
+candidate_bundle_identifiers = [requested_bundle_identifier, app_bundle_identifier].compact.uniq
+bundle_id = nil
+bundle_identifier = nil
+
+candidate_bundle_identifiers.each do |candidate|
+  bundle_id = bundle_id_for(candidate)
+  if bundle_id
+    bundle_identifier = candidate
+    break
+  end
+end
+
+raise "No Bundle ID resource found for candidates: #{candidate_bundle_identifiers.join(", ")}" unless bundle_id
+
 puts "Found bundle ID #{bundle_id.fetch("id")} for #{bundle_identifier}"
 
 certificate = create_certificate(csr_path)
@@ -169,6 +187,7 @@ File.binwrite(profile_path, Base64.decode64(profile_content))
 puts "Created App Store provisioning profile #{profile_id}: #{profile_name}"
 
 append_github_env(
+  "BUNDLE_ID" => bundle_identifier,
   "DISTRIBUTION_CERTIFICATE_ID" => certificate_id,
   "PROFILE_ID" => profile_id,
   "PROFILE_NAME" => profile_name
