@@ -80,7 +80,7 @@ def get_data(path)
 end
 
 def app_info_ids(app_id)
-  path = "/apps/#{app_id}/appInfos?fields[appInfos]=id&limit=10"
+  path = "/apps/#{app_id}/appInfos?limit=10"
   get_data(path).map { |app_info| app_info.fetch("id") }
 end
 
