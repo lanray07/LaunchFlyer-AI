@@ -78,6 +78,13 @@ def get_data(path)
   JSON.parse(request_json("get", path).body).fetch("data")
 end
 
+def delete_resource(resource_type, resource_id)
+  return if resource_id.nil? || resource_id.empty?
+
+  request_json("delete", "/#{resource_type}/#{resource_id}", expected: [204, 404])
+  puts "Deleted stale #{resource_type} #{resource_id}"
+end
+
 def query_path(path, params)
   encoded = URI.encode_www_form(params)
   "#{path}?#{encoded}"
@@ -173,6 +180,9 @@ end
 raise "No Bundle ID resource found for candidates: #{candidate_bundle_identifiers.join(", ")}" unless bundle_id
 
 puts "Found bundle ID #{bundle_id.fetch("id")} for #{bundle_identifier}"
+
+delete_resource("profiles", ENV["REVOKE_PROFILE_ID"])
+delete_resource("certificates", ENV["REVOKE_DISTRIBUTION_CERTIFICATE_ID"])
 
 certificate = create_certificate(csr_path)
 certificate_id = certificate.fetch("id")
