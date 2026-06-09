@@ -1,0 +1,38 @@
+name: Update App Privacy Policy URL
+
+on:
+  workflow_dispatch:
+    inputs:
+      privacy_policy_url:
+        description: "Privacy policy URL to set in App Store Connect"
+        required: true
+        default: "https://lanray07.github.io/LaunchFlyer-AI/privacy-policy.html"
+      app_info_locale:
+        description: "Optional App Info locale to update, for example en-GB. Leave blank to update all existing localizations."
+        required: false
+        default: ""
+
+jobs:
+  update-app-privacy-policy-url:
+    name: Update App Store Connect privacy policy URL
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_API_PRIVATE_KEY }}
+      PRIVACY_POLICY_URL: ${{ inputs.privacy_policy_url }}
+      APP_INFO_LOCALE: ${{ inputs.app_info_locale }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Update privacy policy URL
+        run: ruby tools/update_app_privacy_policy_url.rb
