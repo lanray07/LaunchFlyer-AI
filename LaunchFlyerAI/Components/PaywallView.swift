@@ -96,10 +96,19 @@ struct PaywallView: View {
     }
 
     private var legalLine: some View {
-        Text("Subscriptions renew automatically until cancelled. Manage or cancel from your Apple ID subscriptions.")
-            .font(.caption)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(.white.opacity(0.5))
+        VStack(spacing: 8) {
+            Text("Subscriptions renew automatically until cancelled. Manage or cancel from your Apple ID subscriptions.")
+                .font(.caption)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.white.opacity(0.5))
+
+            HStack(spacing: 16) {
+                Link("Privacy Policy", destination: LegalLinks.privacyPolicy)
+                Link("Terms of Use", destination: LegalLinks.termsOfUse)
+            }
+            .font(.caption.bold())
+            .foregroundStyle(.launchMint)
+        }
     }
 }
 
