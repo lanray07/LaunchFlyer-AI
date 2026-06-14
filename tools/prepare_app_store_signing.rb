@@ -158,14 +158,14 @@ def append_github_env(values)
 end
 
 app_id = ENV.fetch("APP_ID", "6777979967")
-requested_bundle_identifier = ENV.fetch("BUNDLE_ID", "com.launchflyer.ai")
+requested_bundle_identifier = ENV.fetch("BUNDLE_ID", "com.launchflyerai.app")
 csr_path = env!("DIST_CSR_PATH")
 cert_path = env!("DIST_CERT_PATH")
 profile_path = env!("PROFILE_PATH")
 profile_name = "LaunchFlyer AI GitHub App Store #{Time.now.utc.strftime("%Y%m%d%H%M%S")}"
 
 app_bundle_identifier = fetch_app_bundle_identifier(app_id)
-candidate_bundle_identifiers = [requested_bundle_identifier, app_bundle_identifier].compact.uniq
+candidate_bundle_identifiers = [app_bundle_identifier, requested_bundle_identifier].compact.uniq
 bundle_id = nil
 bundle_identifier = nil
 
