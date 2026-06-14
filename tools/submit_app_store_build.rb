@@ -250,7 +250,16 @@ build = wait_for_processed_build(app_id, build_number, timeout_minutes)
 attach_build_to_version(version_id, build.fetch("id"))
 
 active_submissions = active_review_submissions(app_id)
-unless active_submissions.empty?
+unresolved_submission = active_submissions.find do |submission|
+  submission.dig("attributes", "state") == "UNRESOLVED_ISSUES"
+end
+
+if unresolved_submission
+  unresolved_submission_id = unresolved_submission.fetch("id")
+  puts "Resubmitting existing unresolved review submission #{unresolved_submission_id}"
+  submit_review_submission(unresolved_submission_id)
+  exit
+elsif !active_submissions.empty?
   summary = active_submissions.map { |submission| "#{submission.fetch("id")}:#{submission.dig("attributes", "state")}" }.join(", ")
   raise "An active review submission already exists: #{summary}"
 end
