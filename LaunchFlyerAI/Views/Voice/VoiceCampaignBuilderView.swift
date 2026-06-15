@@ -15,6 +15,7 @@ struct VoiceCampaignBuilderView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     SectionHeader("Voice Campaign Builder", title: "Say the idea")
+                    privacyNotice
                     recorderPanel
                     transcriptEditor
                     generateButton
@@ -32,6 +33,19 @@ struct VoiceCampaignBuilderView: View {
         .onReceive(services.speechRecognitionService.$transcript) { value in
             if value != editableTranscript {
                 editableTranscript = value
+            }
+        }
+    }
+
+    private var privacyNotice: some View {
+        GlassPanel {
+            Label {
+                Text("Voice input uses microphone and speech recognition only after permission. Transcripts stay editable in the app and are not sent to the developer or any third-party AI provider.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.72))
+            } icon: {
+                Image(systemName: "mic.badge.plus")
+                    .foregroundStyle(.launchMint)
             }
         }
     }

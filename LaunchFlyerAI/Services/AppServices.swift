@@ -30,10 +30,6 @@ final class AppServices: ObservableObject {
     static func mock() -> AppServices {
         AppServices(provider: MockAIService(), mockAIEnabled: true)
     }
-
-    static func remote() -> AppServices {
-        AppServices(provider: RemoteAIService(), mockAIEnabled: false)
-    }
 }
 
 enum MockAIConfiguration {

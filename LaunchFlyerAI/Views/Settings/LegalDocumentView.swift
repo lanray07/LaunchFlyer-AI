@@ -44,9 +44,9 @@ struct LegalDocument: Hashable {
     static let privacy = LegalDocument(
         title: "Privacy Policy",
         sections: [
-            .init(title: "Data storage", body: "LaunchFlyer AI stores campaigns, brand kits, voice transcripts, exports, and subscription state locally on device using SwiftData unless a remote backend is configured."),
-            .init(title: "Voice input", body: "Speech recognition is used only after permission is granted. Transcripts can be edited before generation and are stored locally for campaign history."),
-            .init(title: "AI requests", body: "Mock AI is enabled by default. When RemoteAIService is enabled, campaign briefs are sent to the configured backend endpoint for generation."),
+            .init(title: "Data storage", body: "LaunchFlyer AI stores campaigns, brand kits, voice transcripts, exports, preferences, and subscription state locally on device using SwiftData. The developer does not collect this app-created content."),
+            .init(title: "Voice input", body: "Microphone and speech recognition are used only after permission is granted. Transcripts can be edited before generation and are stored locally for campaign history."),
+            .init(title: "AI generation", body: "This App Store build uses local template-based generation in the app. Campaign prompts, voice transcripts, drafts, and generated content are not sent to the developer, an AI vendor, or any third-party AI service."),
             .init(title: "Purchases", body: "Subscriptions are processed through Apple StoreKit and managed by the user's Apple ID subscription settings.")
         ],
         externalURL: LegalLinks.privacyPolicy
@@ -58,7 +58,7 @@ struct LegalDocument: Hashable {
             .init(title: "Creative output", body: "Generated flyers, captions, hashtags, and campaign packs are editable creative drafts. Users are responsible for reviewing claims, dates, offers, and legal compliance before publishing."),
             .init(title: "Subscriptions", body: "Premium plans unlock advanced templates, unlimited campaigns, export capabilities, brand kits, and agency workflows according to the active StoreKit entitlement. Subscription titles, durations, and prices are shown before purchase. Subscriptions renew automatically until cancelled and can be managed from Apple ID subscription settings."),
             .init(title: "Acceptable use", body: "Users may not generate deceptive, infringing, abusive, unsafe, or unlawful promotional material."),
-            .init(title: "Service changes", body: "Features, templates, export formats, and backend AI providers may evolve as LaunchFlyer AI grows.")
+            .init(title: "Service changes", body: "Features, templates, export formats, and subscription offerings may evolve as LaunchFlyer AI grows.")
         ],
         externalURL: LegalLinks.termsOfUse
     )

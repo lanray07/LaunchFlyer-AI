@@ -12,6 +12,7 @@ struct CampaignPromptView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     SectionHeader("Generator", title: "Campaign Prompt")
+                    privacyNotice
                     promptForm
                     generateButton
                     if let error = viewModel.errorMessage {
@@ -25,6 +26,19 @@ struct CampaignPromptView: View {
             }
         }
         .navigationTitle("Create")
+    }
+
+    private var privacyNotice: some View {
+        GlassPanel {
+            Label {
+                Text("This build generates campaign text locally in the app. Campaign prompts, drafts, and generated content are not sent to the developer or any third-party AI provider.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.72))
+            } icon: {
+                Image(systemName: "lock.shield.fill")
+                    .foregroundStyle(.launchMint)
+            }
+        }
     }
 
     private var promptForm: some View {

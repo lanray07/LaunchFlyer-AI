@@ -41,13 +41,10 @@ protocol CampaignAIProvider {
 }
 
 enum AIServiceError: LocalizedError {
-    case invalidBackendURL
     case emptyPrompt
 
     var errorDescription: String? {
         switch self {
-        case .invalidBackendURL:
-            return "The remote backend URL is not configured."
         case .emptyPrompt:
             return "Add a campaign idea before generating."
         }
